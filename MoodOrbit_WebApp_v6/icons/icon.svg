@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <!-- Background -->
+  <rect width="512" height="512" rx="128" fill="#1a1b36"/>
+  
+  <!-- Outer glowing rings (Orbit) -->
+  <circle cx="256" cy="256" r="180" fill="none" stroke="rgba(99, 102, 241, 0.15)" stroke-width="4"/>
+  <circle cx="256" cy="256" r="130" fill="none" stroke="rgba(255, 255, 255, 0.08)" stroke-width="2" stroke-dasharray="8, 6"/>
+
+  <!-- Glow effect under main orb -->
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#6366f1" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#1a1b36" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="orbGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a5b4fc"/>
+      <stop offset="50%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#4f46e5"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffedd5"/>
+      <stop offset="100%" stop-color="#fcd34d"/>
+    </linearGradient>
+  </defs>
+  
+  <circle cx="256" cy="256" r="120" fill="url(#glow)"/>
+
+  <!-- Main Figure Base/Orb -->
+  <circle cx="256" cy="256" r="75" fill="url(#orbGrad)" filter="drop-shadow(0px 8px 20px rgba(0, 0, 0, 0.35))"/>
+  
+  <!-- Placed Dome on Top (Visual representation) -->
+  <path d="M 206 226 A 55 55 0 0 1 306 226 Z" fill="url(#goldGrad)" opacity="0.9" filter="drop-shadow(0px 4px 10px rgba(252, 211, 77, 0.5))"/>
+  
+  <!-- Orbiting emotional spheres -->
+  <circle cx="120" cy="180" r="16" fill="#60a5fa" filter="drop-shadow(0 2px 6px rgba(96,165,250,0.4))"/> <!-- Sad Blue -->
+  <circle cx="380" cy="320" r="14" fill="#34d399" filter="drop-shadow(0 2px 6px rgba(52,211,153,0.4))"/> <!-- Peace Green -->
+  <circle cx="340" cy="130" r="12" fill="#f472b6" filter="drop-shadow(0 2px 6px rgba(244,114,182,0.4))"/> <!-- Flutter Pink -->
+</svg>
