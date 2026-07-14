@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#151522">
+  <meta name="description" content="무드오빗 정서·루틴 케어 시스템">
+  <title>무드오빗 | 정서·루틴 케어</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon.svg">
+  <link rel="stylesheet" href="style.css?v=6.0.0">
+</head>
+<body>
+  <div class="ambient ambient-one" aria-hidden="true"></div>
+  <div class="ambient ambient-two" aria-hidden="true"></div>
+
+  <div class="app-shell">
+    <main class="care-panel glass-panel">
+      <header class="brand-header">
+        <div class="brand-lockup">
+          <div class="brand-mark" aria-hidden="true">
+            <span class="brand-orbit"></span>
+            <span class="brand-core"></span>
+          </div>
+          <div>
+            <p class="eyebrow">MOOD ORBIT</p>
+            <h1>마음과 일상을<br><span>가볍게 궤도에 올려보세요.</span></h1>
+            <p class="brand-copy">무기력하거나 지친 날에도 완료와 쉬어감 모두 오늘을 지켜낸 선택으로 기록합니다.</p>
+          </div>
+        </div>
+
+        <div class="sync-pill" id="sync-pill" title="브라우저 저장 및 Supabase 동기화 상태">
+          <span class="sync-dot"></span>
+          <span id="sync-text">브라우저에 안전하게 저장 중</span>
+        </div>
+      </header>
+
+      <nav class="tabs-nav" aria-label="무드오빗 메뉴">
+        <button class="tab-btn active" data-tab="today">
+          <span class="tab-icon">◌</span><span>오늘의 하루</span>
+        </button>
+        <button class="tab-btn" data-tab="calendar">
+          <span class="tab-icon">▦</span><span>기록 흐름</span>
+        </button>
+        <button class="tab-btn" data-tab="report">
+          <span class="tab-icon">✦</span><span>주간 리포트</span>
+        </button>
+        <button class="tab-btn" data-tab="onboarding">
+          <span class="tab-icon">◎</span><span>내 오빗 등록</span>
+        </button>
+      </nav>
+
+      <section id="tab-today" class="tab-content active">
+        <div class="section-heading split-heading">
+          <div>
+            <p class="section-kicker">TODAY CARE</p>
+            <h2>오늘을 지키는 작은 루틴</h2>
+            <p>해낸 날도, 쉬어간 날도 스스로를 돌본 기록입니다.</p>
+          </div>
+          <button class="nudge-btn" id="demo-alert-btn">
+            <span>♩</span> 알림 넛지 데모
+          </button>
+        </div>
+
+        <div class="today-summary" id="today-summary" aria-live="polite"></div>
+        <div class="routine-list" id="routine-list-container"></div>
+
+        <div class="add-routine-bar">
+          <input type="text" id="new-routine-name" class="text-input" placeholder="작은 루틴 추가 · 예: 물 한 잔 마시기" maxlength="30">
+          <button class="primary-btn compact" id="add-routine-btn">추가</button>
+        </div>
+      </section>
+
+      <section id="tab-calendar" class="tab-content">
+        <div class="section-heading">
+          <p class="section-kicker">14 DAY FLOW</p>
+          <h2>나의 상태 흐름</h2>
+          <p>점수 대신 색과 작은 흔적으로 최근 14일을 바라봅니다.</p>
+        </div>
+        <div class="flow-legend" id="flow-legend"></div>
+        <div class="calendar-grid" id="calendar-grid-container"></div>
+      </section>
+
+      <section id="tab-report" class="tab-content">
+        <div class="section-heading">
+          <p class="section-kicker">WEEKLY ORBIT</p>
+          <h2>주간 리포트</h2>
+          <p>지적이나 반성이 아닌, 지난 일주일을 다정하게 읽어주는 기록입니다.</p>
+        </div>
+
+        <div class="report-grid">
+          <article class="report-stat-card">
+            <span class="stat-symbol">◉</span>
+            <span class="stat-value" id="stat-emotion-primary">기록 없음</span>
+            <span class="stat-label">주로 머문 마음</span>
+          </article>
+          <article class="report-stat-card">
+            <span class="stat-symbol">☁</span>
+            <span class="stat-value" id="stat-routine-rest">0회</span>
+            <span class="stat-label">쉬어감을 선택한 횟수</span>
+          </article>
+          <article class="report-stat-card">
+            <span class="stat-symbol">✦</span>
+            <span class="stat-value" id="stat-active-days">0일</span>
+            <span class="stat-label">마음을 남긴 날</span>
+          </article>
+          <div class="report-message-box" id="report-message-content"></div>
+        </div>
+      </section>
+
+      <section id="tab-onboarding" class="tab-content">
+        <div class="section-heading">
+          <p class="section-kicker">MY ORBIT</p>
+          <h2>나만의 오빗 등록하기</h2>
+          <p>마이오빗돔의 색과 이름을 정하면 피규어의 기기 플레이트에 바로 반영됩니다.</p>
+        </div>
+
+        <div class="onboarding-card">
+          <div class="custom-dome-preview" id="custom-dome-preview-box" aria-label="선택한 마이오빗돔 미리보기"></div>
+          <div class="onboarding-form">
+            <label class="field-label">마이오빗돔 색상</label>
+            <div class="color-palette" id="color-palette-container"></div>
+            <label class="field-label" for="my-dome-name-input">오빗 이름</label>
+            <input type="text" id="my-dome-name-input" class="text-input" placeholder="예: 온기" maxlength="10">
+            <button class="primary-btn" id="save-onboarding-btn">마이오빗 등록하기</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <aside class="simulator-panel glass-panel">
+      <div class="simulator-header">
+        <div>
+          <p class="section-kicker">FIGURE SIMULATOR</p>
+          <h2>오빗 피규어</h2>
+        </div>
+        <span class="status-badge" id="device-connection-badge">기기 미연동 · 가상 작동</span>
+      </div>
+
+      <p class="simulator-copy">
+        감정돔을 피규어 머리 위로 드래그하거나 한 번 눌러 기록하세요.
+      </p>
+
+      <section class="figure-studio" id="device-drop-zone" aria-label="오빗 피규어 감정돔 시뮬레이터">
+        <div class="studio-stars" aria-hidden="true">
+          <i></i><i></i><i></i><i></i><i></i>
+        </div>
+        <div class="studio-caption" id="studio-caption">
+          <span class="caption-dot"></span>
+          <span>지금 마음과 가까운 돔을 올려보세요</span>
+        </div>
+
+        <div class="orbit-device" id="virtual-orbit-device">
+          <div class="device-glow" id="device-led-glow" aria-hidden="true"></div>
+          <div class="floor-glow" aria-hidden="true"></div>
+          <div class="sound-ripple" aria-hidden="true"></div>
+
+          <div class="dome-dock" id="device-dome-dock">
+            <div class="dock-guide" id="dock-placeholder-text">
+              <span class="dock-arrow">↓</span>
+              <strong>여기에 돔 올리기</strong>
+            </div>
+          </div>
+
+          <img class="device-image" src="assets/device.png" alt="무드오빗 피규어">
+          <div class="device-plate" id="my-dome-plate-name">MOOD ORBIT</div>
+        </div>
+
+        <div class="stage-hint">
+          <span>돔을 다시 누르면 내려가요</span>
+          <span class="stage-hint-separator">·</span>
+          <span>LED와 기록이 함께 바뀌어요</span>
+        </div>
+      </section>
+
+      <div class="active-emotion-card" id="active-emotion-card">
+        <span class="emotion-swatch" id="active-emotion-swatch"></span>
+        <div class="active-emotion-copy">
+          <strong id="active-emotion-name">아직 올려진 돔이 없어요</strong>
+          <p id="active-emotion-desc">지금의 마음과 가장 가까운 돔을 골라보세요.</p>
+        </div>
+        <span class="active-emotion-state">NOW</span>
+      </div>
+
+      <section class="domes-tray">
+        <div class="tray-heading">
+          <div>
+            <p class="tray-kicker">EMOTION DOMES</p>
+            <h3>감정돔 보관함</h3>
+          </div>
+          <span>드래그 또는 원클릭</span>
+        </div>
+        <div class="tray-grid" id="domes-tray-container"></div>
+      </section>
+
+      <section class="recent-card">
+        <div class="tray-heading">
+          <div>
+            <p class="tray-kicker">RECENT</p>
+            <h3>최근 마음 기록</h3>
+          </div>
+          <span>최대 5개</span>
+        </div>
+        <div class="recent-list" id="recent-emotion-list"></div>
+      </section>
+
+      <section class="hardware-settings">
+        <div class="hardware-title-row">
+          <div>
+            <p class="tray-kicker">DEVICE</p>
+            <h3>디바이스 연결</h3>
+          </div>
+          <button class="text-button" id="disconnect-btn" hidden>연결 해제</button>
+        </div>
+
+        <div class="device-info-grid">
+          <div class="hw-row">
+            <span>기기 상태</span>
+            <strong id="hw-status-text">가상 시뮬레이터 구동 중</strong>
+          </div>
+          <div class="hw-row">
+            <span>마지막 NFC UID</span>
+            <strong id="hw-nfc-uid">없음</strong>
+          </div>
+          <div class="hw-row">
+            <span>기기 배터리</span>
+            <strong id="hw-battery-text">정보 없음</strong>
+          </div>
+        </div>
+
+        <button class="hw-connect-btn" id="ble-connect-btn">
+          <span class="bluetooth-symbol">ᛒ</span>
+          실제 ESP32 블루투스 연결
+        </button>
+
+        <details class="settings-details">
+          <summary>연결·NFC·Supabase 상세 설정</summary>
+          <div class="settings-body">
+            <div class="settings-group">
+              <h4>조명 제어</h4>
+              <div class="inline-controls">
+                <label for="brightness-range">밝기 <span id="brightness-value">40</span></label>
+                <input type="range" id="brightness-range" min="5" max="120" value="40">
+                <button class="secondary-btn" id="led-off-btn">조명 끄기</button>
+              </div>
+            </div>
+
+            <div class="settings-group">
+              <div class="settings-group-title">
+                <h4>NFC 감정돔 등록</h4>
+                <button class="text-button danger" id="reset-tags-btn">전체 초기화</button>
+              </div>
+              <p class="helper-text">등록을 누른 뒤 해당 감정돔의 NFC를 PN532에 태그하세요.</p>
+              <div class="tag-register-grid" id="tag-register-grid"></div>
+            </div>
+
+            <div class="settings-group">
+              <h4>Supabase 기록 저장</h4>
+              <label class="field-label" for="supabase-url">Project URL</label>
+              <input type="url" id="supabase-url" class="text-input" placeholder="https://xxxx.supabase.co">
+              <label class="field-label" for="supabase-key">Publishable key 또는 anon key</label>
+              <input type="password" id="supabase-key" class="text-input" placeholder="브라우저용 공개 키만 입력">
+              <div class="inline-buttons">
+                <button class="secondary-btn" id="save-cloud-settings-btn">설정 저장</button>
+                <button class="secondary-btn" id="flush-queue-btn">대기 기록 전송</button>
+              </div>
+              <p class="helper-text" id="queue-status-text">대기 기록 0개</p>
+            </div>
+          </div>
+        </details>
+      </section>
+    </aside>
+  </div>
+
+  <div class="toast-region" id="toast-region" aria-live="polite" aria-atomic="true"></div>
+  <script src="app.js?v=6.0.0"></script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+{
+  "short_name": "무드오빗",
+  "name": "무드오빗 정서·루틴 케어",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "./index.html",
+  "scope": "./",
+  "background_color": "#10101a",
+  "theme_color": "#151522",
+  "display": "standalone",
+  "orientation": "any",
+  "lang": "ko-KR",
+  "description": "감정돔과 오빗 피규어로 마음과 루틴을 기록하는 정서 케어 시스템"
+}
