@@ -259,7 +259,7 @@ function createMyOrbitDome(orbit) {
     name: orbit.name,
     color: orbit.color,
     uid: '',
-    desc: '내가 직접 정한 색과 이름으로 오늘의 분위기를 남기는 커스텀 돔입니다.',
+    desc: '색과 이름을 직접 정해 오늘을 기록하는 커스텀 돔입니다.',
     imgSrc: null,
     deviceSrc: 'assets/device_my.png',
     custom: true
@@ -270,10 +270,6 @@ function initializeMyOrbit() {
   db.myOrbits = Array.isArray(db.myOrbits) ? db.myOrbits : [];
   myOrbitDomes = db.myOrbits.map(createMyOrbitDome);
 
-  const plate = document.getElementById('my-dome-plate-name');
-  if (plate && !activeDomeSnapshot?.custom) {
-    plate.textContent = 'MOOD ORBIT';
-  }
 }
 
 function showToast(message, type = 'info', timeout = 3200) {
@@ -662,7 +658,6 @@ function renderDomeOnDevice(dome, playEffects = true) {
   document.documentElement.style.setProperty('--active-color', dome.color);
   device.dataset.emotion = dome.code || dome.id;
   setDeviceImage(dome.deviceSrc || DEVICE_IMAGE_DEFAULT, `${dome.name} 감정돔이 올라간 무드오빗 피규어`);
-  document.getElementById('my-dome-plate-name').textContent = dome.custom ? dome.name.toUpperCase() : 'MOOD ORBIT';
 
   const placed = document.createElement('button');
   placed.type = 'button';
@@ -733,7 +728,6 @@ async function removeDomeFromDevice({ source = 'WEB', syncDevice = false, persis
   device.style.setProperty('--active-color', '#A58AF7');
   device.removeAttribute('data-emotion');
   setDeviceImage(DEVICE_IMAGE_DEFAULT);
-  document.getElementById('my-dome-plate-name').textContent = 'MOOD ORBIT';
   const stage = document.getElementById('device-drop-zone');
   stage?.style.setProperty('--active-color', '#A58AF7');
   document.documentElement.style.setProperty('--active-color', '#A58AF7');

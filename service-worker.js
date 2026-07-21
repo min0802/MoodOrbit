@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mood-orbit-v6-figure-name';
+const CACHE_NAME = 'mood-orbit-v6-dome-tooltip-lift';
 const APP_SHELL = [
   './',
   './index.html',
