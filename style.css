@@ -713,7 +713,7 @@ h3 {
   inset: 0;
   z-index: 3;
   pointer-events: none;
-  background: url('assets/device.png') no-repeat center / contain;
+  background: url('assets/device_main.png') no-repeat center / contain;
 }
 
 .device-glow {
@@ -1761,6 +1761,10 @@ body::before {
   cursor: pointer;
   filter: drop-shadow(0 16px 17px rgba(0,0,0,.26));
   animation: v6DomePlace 470ms cubic-bezier(.17,.89,.35,1.2);
+}
+
+.placed-dome.device-state-control {
+  filter: none;
 }
 
 .placed-dome img {
