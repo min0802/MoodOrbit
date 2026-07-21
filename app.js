@@ -18,41 +18,50 @@ const BLE_UUIDS = {
   tx: '6e400003-b5a3-f393-e0a9-e50e24dcca9e'
 };
 
+const DEVICE_IMAGE_DEFAULT = 'assets/device_main.png';
+
 const EMOTIONS = {
   joy: {
     id: 'joy', code: 'JOY', name: '기쁨', color: '#FF9F43',
     uid: '', desc: '기분 좋은 순간과 작은 성취가 마음에 따뜻하게 남아 있어요.',
-    imgSrc: 'assets/dome_joy.png'
+    imgSrc: 'assets/dome_joy.png',
+    deviceSrc: 'assets/device_joy.png'
   },
   sad: {
     id: 'sad', code: 'SADNESS', name: '슬픔', color: '#8A93A6',
     uid: '', desc: '마음이 무겁거나 공허한 상태도 숨기지 않고 그대로 남겨도 괜찮아요.',
-    imgSrc: 'assets/dome_sad.png'
+    imgSrc: 'assets/dome_sad.png',
+    deviceSrc: 'assets/device_dome_sad.png'
   },
   anger: {
     id: 'anger', code: 'ANGER', name: '분노', color: '#FF3B30',
     uid: '', desc: '억울하거나 화가 난 마음이 있다는 사실을 먼저 알아차려 주세요.',
-    imgSrc: 'assets/dome_anger.png'
+    imgSrc: 'assets/dome_anger.png',
+    deviceSrc: 'assets/device_anger.png'
   },
   surprise: {
     id: 'surprise', code: 'SURPRISE', name: '놀람', color: '#FFD43B',
     uid: '', desc: '예상하지 못한 변화로 마음이 크게 흔들린 순간을 기록합니다.',
-    imgSrc: 'assets/dome_surprise.png'
+    imgSrc: 'assets/dome_surprise.png',
+    deviceSrc: 'assets/device_dome_surprise.png'
   },
   peace: {
     id: 'peace', code: 'PEACE', name: '평화', color: '#4D96FF',
     uid: '', desc: '마음이 고요하고 안정된 순간의 온도를 오래 기억해 보세요.',
-    imgSrc: 'assets/dome_peace.png'
+    imgSrc: 'assets/dome_peace.png',
+    deviceSrc: 'assets/device_peace.png'
   },
   flutter: {
     id: 'flutter', code: 'EXCITEMENT', name: '설렘', color: '#FF78B7',
     uid: '', desc: '기대와 두근거림이 하루를 조금 더 선명하게 만드는 상태예요.',
-    imgSrc: 'assets/dome_flutter.png'
+    imgSrc: 'assets/dome_flutter.png',
+    deviceSrc: 'assets/device_flutter.png'
   },
   irritation: {
     id: 'irritation', code: 'IRRITATION', name: '짜증', color: '#62C370',
     uid: '', desc: '답답하고 예민해진 마음은 잠시 멈춰 쉬어가라는 신호일 수 있어요.',
-    imgSrc: 'assets/dome_irritation.png'
+    imgSrc: 'assets/dome_irritation.png',
+    deviceSrc: 'assets/device_irritation.png'
   }
 };
 
@@ -242,6 +251,7 @@ function initializeMyOrbit() {
     uid: '',
     desc: '내가 직접 정한 색과 이름으로 오늘의 분위기를 남기는 커스텀 돔입니다.',
     imgSrc: null,
+    deviceSrc: 'assets/device_my.png',
     custom: true
   };
 
@@ -443,6 +453,13 @@ async function selectDomeFromWeb(domeId) {
   });
 }
 
+function setDeviceImage(src = DEVICE_IMAGE_DEFAULT, alt = '무드오빗 피규어') {
+  const image = document.getElementById('device-state-image');
+  if (!image) return;
+  if (image.getAttribute('src') !== src) image.src = src;
+  image.alt = alt;
+}
+
 function renderDomeOnDevice(dome, playEffects = true) {
   activeDomeId = dome.id;
   activeDomeSnapshot = { ...dome };
@@ -458,6 +475,7 @@ function renderDomeOnDevice(dome, playEffects = true) {
   stage?.style.setProperty('--active-color', dome.color);
   document.documentElement.style.setProperty('--active-color', dome.color);
   device.dataset.emotion = dome.code || dome.id;
+  setDeviceImage(dome.deviceSrc || DEVICE_IMAGE_DEFAULT, `${dome.name} 감정돔이 올라간 무드오빗 피규어`);
 
   const placed = document.createElement('button');
   placed.type = 'button';
@@ -466,7 +484,9 @@ function renderDomeOnDevice(dome, playEffects = true) {
   placed.setAttribute('aria-label', `${dome.name} 돔 내리기`);
   placed.style.setProperty('--dome-color', dome.color);
 
-  if (dome.imgSrc) {
+  if (dome.deviceSrc) {
+    placed.classList.add('device-state-control');
+  } else if (dome.imgSrc) {
     const image = document.createElement('img');
     image.src = dome.imgSrc;
     image.alt = `${dome.name} 감정돔이 피규어 위에 올려진 모습`;
@@ -525,6 +545,7 @@ async function removeDomeFromDevice({ source = 'WEB', syncDevice = false, persis
   device.classList.remove('glow-active');
   device.style.setProperty('--active-color', '#A58AF7');
   device.removeAttribute('data-emotion');
+  setDeviceImage(DEVICE_IMAGE_DEFAULT);
   const stage = document.getElementById('device-drop-zone');
   stage?.style.setProperty('--active-color', '#A58AF7');
   document.documentElement.style.setProperty('--active-color', '#A58AF7');
