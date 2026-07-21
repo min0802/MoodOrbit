@@ -864,21 +864,6 @@ h3 {
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-.device-plate {
-  position: absolute;
-  left: 50%;
-  bottom: 7%;
-  z-index: 7;
-  max-width: 120px;
-  overflow: hidden;
-  transform: translateX(-50%);
-  color: #5a5260;
-  font-size: 0.59rem;
-  font-weight: 800;
-  letter-spacing: 0.07em;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 
 .sound-ripple {
   position: absolute;
@@ -1894,7 +1879,7 @@ body::before {
   content: "한 번 눌러 돔 내리기";
   position: absolute;
   left: 50%;
-  top: -8px;
+  top: calc(100% + 18px);
   width: max-content;
   padding: 5px 8px;
   border: 1px solid rgba(255,255,255,.1);
@@ -1910,7 +1895,7 @@ body::before {
 
 .placed-dome:hover::after,
 .placed-dome:focus-visible::after {
-  top: -2px;
+  top: calc(100% + 18px);
   opacity: 1;
 }
 
@@ -1920,16 +1905,6 @@ body::before {
   100% { opacity: 1; transform: translate(-50%, 0) scale(1) rotate(0); }
 }
 
-.device-plate {
-  left: 50%;
-  bottom: 6.1%;
-  z-index: 10;
-  max-width: 148px;
-  color: #62576b;
-  font-size: .62rem;
-  letter-spacing: .09em;
-  text-shadow: 0 1px rgba(255,255,255,.7);
-}
 
 .sound-ripple {
   top: 5%;
@@ -2427,11 +2402,6 @@ body::before {
     top: 12px;
     max-width: calc(100% - 18px);
     font-size: .64rem;
-  }
-
-  .device-plate {
-    bottom: 6%;
-    font-size: .54rem;
   }
 
   .tray-grid {
