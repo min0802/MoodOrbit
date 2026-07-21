@@ -79,7 +79,7 @@ const DEFAULT_ROUTINES = [
 let db = createDefaultDb();
 let activeDomeId = null;
 let activeDomeSnapshot = null;
-let myOrbitDome = null;
+let myOrbitDomes = [];
 let selectedOrbitColor = '#8B7CF6';
 let audioCtx = null;
 let nudgeTimer = null;
@@ -109,6 +109,7 @@ function createDefaultDb() {
     version: APP_VERSION,
     participantId: makeUuid(),
     myOrbit: null,
+    myOrbits: [],
     routines: structuredCloneSafe(DEFAULT_ROUTINES),
     logs: {},
     events: []
@@ -183,8 +184,10 @@ function escapeHtml(value) {
 
 function getDomeInfo(domeId) {
   if (EMOTIONS[domeId]) return EMOTIONS[domeId];
-  if (myOrbitDome && domeId === myOrbitDome.id) return myOrbitDome;
-  return null;
+  const customDome = myOrbitDomes.find((dome) => dome.id === domeId);
+  if (customDome) return customDome;
+  const storedOrbit = Array.isArray(db.myOrbits) ? db.myOrbits.find((orbit) => orbit.id === domeId) : null;
+  return storedOrbit ? createMyOrbitDome(storedOrbit) : null;
 }
 
 function findEmotionByUid(uid) {
@@ -218,6 +221,16 @@ function migrateLegacyData() {
     events: Array.isArray(source.events) ? source.events : []
   };
 
+  db.myOrbits = Array.isArray(source.myOrbits) ? source.myOrbits : [];
+  if (!db.myOrbits.length && source.myOrbit) {
+    db.myOrbits = [{
+      id: 'my-dome',
+      name: source.myOrbit.name,
+      color: source.myOrbit.color,
+      updatedAt: source.myOrbit.updatedAt || getLocalTimestamp()
+    }];
+  }
+
   Object.values(db.logs).forEach((log) => {
     if (!log.routines) log.routines = {};
     if (!('emotionMeta' in log)) {
@@ -237,25 +250,28 @@ function migrateLegacyData() {
   saveDb();
 }
 
-function initializeMyOrbit() {
-  if (!db.myOrbit) {
-    myOrbitDome = null;
-    return;
-  }
-
-  myOrbitDome = {
-    id: 'my-dome',
+function createMyOrbitDome(orbit) {
+  return {
+    id: orbit.id,
     code: 'CUSTOM',
-    name: db.myOrbit.name,
-    color: db.myOrbit.color,
+    name: orbit.name,
+    color: orbit.color,
     uid: '',
     desc: '내가 직접 정한 색과 이름으로 오늘의 분위기를 남기는 커스텀 돔입니다.',
     imgSrc: null,
     deviceSrc: 'assets/device_my.png',
     custom: true
   };
+}
 
-  document.getElementById('my-dome-plate-name').textContent = db.myOrbit.name.toUpperCase();
+function initializeMyOrbit() {
+  db.myOrbits = Array.isArray(db.myOrbits) ? db.myOrbits : [];
+  myOrbitDomes = db.myOrbits.map(createMyOrbitDome);
+
+  const plate = document.getElementById('my-dome-plate-name');
+  if (plate && !activeDomeSnapshot?.custom) {
+    plate.textContent = 'MOOD ORBIT';
+  }
 }
 
 function showToast(message, type = 'info', timeout = 3200) {
@@ -272,7 +288,7 @@ function setupTabs() {
     button.addEventListener('click', () => switchTab(button.dataset.tab));
   });
 
-  if (!db.myOrbit) switchTab('onboarding');
+  if (!Array.isArray(db.myOrbits) || !db.myOrbits.length) switchTab('onboarding');
 }
 
 function switchTab(tabId) {
@@ -301,10 +317,7 @@ function setupOnboarding() {
   const preview = document.getElementById('custom-dome-preview-box');
   const nameInput = document.getElementById('my-dome-name-input');
 
-  if (db.myOrbit) {
-    selectedOrbitColor = db.myOrbit.color;
-    nameInput.value = db.myOrbit.name;
-  }
+  nameInput.value = '';
   preview.style.setProperty('--custom-color', selectedOrbitColor);
 
   palette.innerHTML = '';
@@ -333,11 +346,19 @@ function setupOnboarding() {
       return;
     }
 
-    db.myOrbit = { name, color: selectedOrbitColor, updatedAt: getLocalTimestamp() };
+    db.myOrbits = Array.isArray(db.myOrbits) ? db.myOrbits : [];
+    const orbit = {
+      id: `my-dome-${Date.now()}`,
+      name,
+      color: selectedOrbitColor,
+      updatedAt: getLocalTimestamp()
+    };
+    db.myOrbits.push(orbit);
+    db.myOrbit = orbit;
     saveDb();
     initializeMyOrbit();
     initializeDomesTray();
-    document.getElementById('my-dome-plate-name').textContent = name.toUpperCase();
+    nameInput.value = '';
     showToast(`${name} 오빗이 등록되었습니다.`, 'success');
     switchTab('today');
   });
@@ -347,7 +368,7 @@ function initializeDomesTray() {
   const container = document.getElementById('domes-tray-container');
   container.innerHTML = '';
 
-  [...Object.values(EMOTIONS), ...(myOrbitDome ? [myOrbitDome] : [])]
+  [...Object.values(EMOTIONS), ...myOrbitDomes]
     .forEach((dome) => container.appendChild(createTrayItem(dome)));
 }
 
@@ -386,12 +407,47 @@ function createTrayItem(dome) {
 
   const label = document.createElement('span');
   label.className = 'tray-label';
-  label.textContent = dome.name;
+  const labelText = document.createElement('span');
+  labelText.className = 'tray-label-text';
+  labelText.textContent = dome.name;
+  label.appendChild(labelText);
+
+  if (dome.custom) {
+    const deleteButton = document.createElement('button');
+    deleteButton.type = 'button';
+    deleteButton.className = 'tray-delete-btn';
+    deleteButton.title = dome.name + ' 오빗 삭제';
+    deleteButton.setAttribute('aria-label', dome.name + ' 오빗 삭제');
+    deleteButton.textContent = '×';
+    deleteButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      deleteMyOrbitDome(dome.id);
+    });
+    label.appendChild(deleteButton);
+  }
 
   item.append(button, label);
   return item;
 }
 
+
+function deleteMyOrbitDome(domeId) {
+  const dome = getDomeInfo(domeId);
+  if (!dome?.custom) return;
+
+  db.myOrbits = (Array.isArray(db.myOrbits) ? db.myOrbits : []).filter((orbit) => orbit.id !== domeId);
+  db.myOrbit = db.myOrbits[db.myOrbits.length - 1] || null;
+  saveDb();
+  initializeMyOrbit();
+  initializeDomesTray();
+
+  if (activeDomeId === domeId) {
+    removeDomeFromDevice({ source: 'WEB', syncDevice: false, persist: false });
+  }
+
+  showToast(`${dome.name} 오빗을 삭제했습니다.`, 'info');
+}
 function setupDragAndDrop() {
   const dropZone = document.getElementById('device-drop-zone');
   const dock = document.getElementById('device-dome-dock');
@@ -476,6 +532,7 @@ function renderDomeOnDevice(dome, playEffects = true) {
   document.documentElement.style.setProperty('--active-color', dome.color);
   device.dataset.emotion = dome.code || dome.id;
   setDeviceImage(dome.deviceSrc || DEVICE_IMAGE_DEFAULT, `${dome.name} 감정돔이 올라간 무드오빗 피규어`);
+  document.getElementById('my-dome-plate-name').textContent = dome.custom ? dome.name.toUpperCase() : 'MOOD ORBIT';
 
   const placed = document.createElement('button');
   placed.type = 'button';
@@ -546,6 +603,7 @@ async function removeDomeFromDevice({ source = 'WEB', syncDevice = false, persis
   device.style.setProperty('--active-color', '#A58AF7');
   device.removeAttribute('data-emotion');
   setDeviceImage(DEVICE_IMAGE_DEFAULT);
+  document.getElementById('my-dome-plate-name').textContent = 'MOOD ORBIT';
   const stage = document.getElementById('device-drop-zone');
   stage?.style.setProperty('--active-color', '#A58AF7');
   document.documentElement.style.setProperty('--active-color', '#A58AF7');
