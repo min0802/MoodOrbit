@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mood-orbit-v6-device-states';
+const CACHE_NAME = 'mood-orbit-v6-my-orbits';
 const APP_SHELL = [
   './',
   './index.html',
