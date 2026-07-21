@@ -110,6 +110,7 @@ function createDefaultDb() {
     participantId: makeUuid(),
     myOrbit: null,
     myOrbits: [],
+    figureOwnerName: '',
     routines: structuredCloneSafe(DEFAULT_ROUTINES),
     logs: {},
     events: []
@@ -218,7 +219,8 @@ function migrateLegacyData() {
       ? source.routines
       : structuredCloneSafe(DEFAULT_ROUTINES),
     logs: source.logs || {},
-    events: Array.isArray(source.events) ? source.events : []
+    events: Array.isArray(source.events) ? source.events : [],
+    figureOwnerName: source.figureOwnerName || ''
   };
 
   db.myOrbits = Array.isArray(source.myOrbits) ? source.myOrbits : [];
@@ -303,6 +305,80 @@ function switchTab(tabId) {
   if (tabId === 'report') updateReport();
 }
 
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function componentToHex(value) {
+  return Math.round(value).toString(16).padStart(2, '0').toUpperCase();
+}
+
+function hsvToHex(hue, saturation, value) {
+  const chroma = value * saturation;
+  const segment = hue / 60;
+  const x = chroma * (1 - Math.abs((segment % 2) - 1));
+  const match = value - chroma;
+  let red = 0;
+  let green = 0;
+  let blue = 0;
+
+  if (segment < 1) [red, green, blue] = [chroma, x, 0];
+  else if (segment < 2) [red, green, blue] = [x, chroma, 0];
+  else if (segment < 3) [red, green, blue] = [0, chroma, x];
+  else if (segment < 4) [red, green, blue] = [0, x, chroma];
+  else if (segment < 5) [red, green, blue] = [x, 0, chroma];
+  else [red, green, blue] = [chroma, 0, x];
+
+  return `#${componentToHex((red + match) * 255)}${componentToHex((green + match) * 255)}${componentToHex((blue + match) * 255)}`;
+}
+
+function hexToHsv(hex) {
+  const normalized = String(hex || '#8B7CF6').replace('#', '');
+  const red = parseInt(normalized.slice(0, 2), 16) / 255;
+  const green = parseInt(normalized.slice(2, 4), 16) / 255;
+  const blue = parseInt(normalized.slice(4, 6), 16) / 255;
+  const max = Math.max(red, green, blue);
+  const min = Math.min(red, green, blue);
+  const delta = max - min;
+  let hue = 0;
+
+  if (delta) {
+    if (max === red) hue = 60 * (((green - blue) / delta) % 6);
+    else if (max === green) hue = 60 * ((blue - red) / delta + 2);
+    else hue = 60 * ((red - green) / delta + 4);
+  }
+
+  return {
+    hue: (hue + 360) % 360,
+    saturation: max === 0 ? 0 : delta / max,
+    value: max
+  };
+}
+function getFigureTitle() {
+  const name = String(db.figureOwnerName || '').trim();
+  return name ? `${name}의 오빗 피규어` : '오빗 피규어';
+}
+
+function updateFigureTitle() {
+  const title = document.getElementById('figure-title-text');
+  if (title) title.textContent = getFigureTitle();
+}
+
+function setupFigureNameEditor() {
+  const button = document.getElementById('figure-name-edit-btn');
+  if (!button) return;
+
+  button.addEventListener('click', () => {
+    const currentName = String(db.figureOwnerName || '').trim();
+    const nextName = prompt('오빗 피규어 앞에 들어갈 이름을 입력하세요.', currentName);
+    if (nextName === null) return;
+
+    db.figureOwnerName = nextName.trim().slice(0, 12);
+    saveDb();
+    updateFigureTitle();
+    showToast(db.figureOwnerName ? `${getFigureTitle()}로 저장했습니다.` : '오빗 피규어 이름을 기본값으로 되돌렸습니다.', 'success');
+  });
+}
 function setupOnboarding() {
   const colors = [
     { name: '오빗 퍼플', hex: '#8B7CF6' },
@@ -316,9 +392,48 @@ function setupOnboarding() {
   const palette = document.getElementById('color-palette-container');
   const preview = document.getElementById('custom-dome-preview-box');
   const nameInput = document.getElementById('my-dome-name-input');
+  const colorWheel = document.getElementById('my-dome-color-wheel');
+  const colorHandle = document.getElementById('my-dome-color-handle');
+  const brightnessInput = document.getElementById('my-dome-brightness-input');
+  const colorValue = document.getElementById('my-dome-color-value');
+  let wheelDragging = false;
+  let currentHsv = hexToHsv(selectedOrbitColor);
+
+  const updateWheelHandle = () => {
+    if (!colorHandle) return;
+    const angle = (currentHsv.hue - 90) * Math.PI / 180;
+    const distance = currentHsv.saturation * 50;
+    colorHandle.style.left = `${50 + Math.cos(angle) * distance}%`;
+    colorHandle.style.top = `${50 + Math.sin(angle) * distance}%`;
+    colorHandle.style.background = selectedOrbitColor;
+  };
+
+  const syncSelectedColor = (color, { updateHsv = true } = {}) => {
+    selectedOrbitColor = color.toUpperCase();
+    if (updateHsv) currentHsv = hexToHsv(selectedOrbitColor);
+    preview.style.setProperty('--custom-color', selectedOrbitColor);
+    if (brightnessInput) brightnessInput.value = Math.round(currentHsv.value * 100);
+    if (colorValue) colorValue.textContent = selectedOrbitColor;
+    palette.querySelectorAll('.color-option').forEach((item) => {
+      item.classList.toggle('selected', item.dataset.color === selectedOrbitColor);
+    });
+    updateWheelHandle();
+  };
+
+  const selectColorFromWheel = (event) => {
+    if (!colorWheel) return;
+    const rect = colorWheel.getBoundingClientRect();
+    const radius = rect.width / 2;
+    const x = event.clientX - rect.left - radius;
+    const y = event.clientY - rect.top - radius;
+    const distance = Math.min(Math.hypot(x, y), radius);
+    currentHsv.saturation = clamp(distance / radius, 0, 1);
+    currentHsv.hue = (Math.atan2(y, x) * 180 / Math.PI + 90 + 360) % 360;
+    syncSelectedColor(hsvToHex(currentHsv.hue, currentHsv.saturation, currentHsv.value), { updateHsv: false });
+  };
 
   nameInput.value = '';
-  preview.style.setProperty('--custom-color', selectedOrbitColor);
+  syncSelectedColor(selectedOrbitColor);
 
   palette.innerHTML = '';
   colors.forEach((option) => {
@@ -328,14 +443,30 @@ function setupOnboarding() {
     button.title = option.name;
     button.setAttribute('aria-label', option.name);
     button.style.backgroundColor = option.hex;
+    button.dataset.color = option.hex.toUpperCase();
     button.classList.toggle('selected', option.hex.toUpperCase() === selectedOrbitColor.toUpperCase());
-    button.addEventListener('click', () => {
-      selectedOrbitColor = option.hex;
-      preview.style.setProperty('--custom-color', selectedOrbitColor);
-      palette.querySelectorAll('.color-option').forEach((item) => item.classList.remove('selected'));
-      button.classList.add('selected');
-    });
+    button.addEventListener('click', () => syncSelectedColor(option.hex));
     palette.appendChild(button);
+  });
+
+  colorWheel?.addEventListener('pointerdown', (event) => {
+    wheelDragging = true;
+    colorWheel.setPointerCapture?.(event.pointerId);
+    selectColorFromWheel(event);
+  });
+  colorWheel?.addEventListener('pointermove', (event) => {
+    if (wheelDragging) selectColorFromWheel(event);
+  });
+  colorWheel?.addEventListener('pointerup', (event) => {
+    wheelDragging = false;
+    colorWheel.releasePointerCapture?.(event.pointerId);
+  });
+  colorWheel?.addEventListener('pointercancel', () => {
+    wheelDragging = false;
+  });
+  brightnessInput?.addEventListener('input', () => {
+    currentHsv.value = Number(brightnessInput.value) / 100;
+    syncSelectedColor(hsvToHex(currentHsv.hue, currentHsv.saturation, currentHsv.value), { updateHsv: false });
   });
 
   document.getElementById('save-onboarding-btn').addEventListener('click', () => {
@@ -363,7 +494,6 @@ function setupOnboarding() {
     switchTab('today');
   });
 }
-
 function initializeDomesTray() {
   const container = document.getElementById('domes-tray-container');
   container.innerHTML = '';
@@ -1514,6 +1644,8 @@ function initializeApp() {
   initializeMyOrbit();
   setupTabs();
   setupOnboarding();
+  setupFigureNameEditor();
+  updateFigureTitle();
   setupDragAndDrop();
   setupRoutineActions();
   setupNudgeDemo();
