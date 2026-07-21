@@ -118,7 +118,16 @@
         <div class="onboarding-card">
           <div class="custom-dome-preview" id="custom-dome-preview-box" aria-label="선택한 마이오빗돔 미리보기"></div>
           <div class="onboarding-form">
-            <label class="field-label">마이오빗돔 색상</label>
+            <label class="field-label" for="my-dome-color-wheel">마이오빗돔 색상</label>
+            <div class="color-wheel-picker">
+              <button type="button" id="my-dome-color-wheel" class="color-wheel" aria-label="마이오빗돔 색상 선택">
+                <span class="color-wheel-handle" id="my-dome-color-handle" aria-hidden="true"></span>
+              </button>
+              <div class="color-wheel-controls">
+                <input type="range" id="my-dome-brightness-input" class="brightness-input" min="35" max="100" value="96" aria-label="마이오빗돔 색상 밝기">
+                <span class="color-value" id="my-dome-color-value">#8B7CF6</span>
+              </div>
+            </div>
             <div class="color-palette" id="color-palette-container"></div>
             <label class="field-label" for="my-dome-name-input">오빗 이름</label>
             <input type="text" id="my-dome-name-input" class="text-input" placeholder="예: 온기" maxlength="10">
@@ -132,7 +141,15 @@
       <div class="simulator-header">
         <div>
           <p class="section-kicker">FIGURE SIMULATOR</p>
-          <h2>오빗 피규어</h2>
+          <div class="figure-title-row">
+            <h2 id="figure-title-text">오빗 피규어</h2>
+            <button type="button" class="icon-button figure-name-edit-btn" id="figure-name-edit-btn" aria-label="오빗 피규어 이름 수정" title="오빗 피규어 이름 수정">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+              </svg>
+            </button>
+          </div>
         </div>
         <span class="status-badge" id="device-connection-badge">기기 미연동 · 가상 작동</span>
       </div>
