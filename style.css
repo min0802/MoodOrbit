@@ -2178,6 +2178,14 @@ body::before {
     gap: 15px;
   }
 
+  .simulator-header {
+    flex-wrap: wrap;
+  }
+
+  .status-badge {
+    flex: 1 1 150px;
+  }
+
   .simulator-header h2 {
     font-size: 1.55rem;
   }
@@ -2191,12 +2199,13 @@ body::before {
   }
 
   .figure-studio {
-    min-height: 410px;
+    min-height: 0;
+    height: clamp(340px, 62svh, 410px);
     padding-inline: 8px;
   }
 
   .orbit-device {
-    width: min(340px, 100%);
+    width: min(340px, 100%, 56svh);
   }
 
   .placed-dome {
@@ -2206,6 +2215,9 @@ body::before {
 
   .stage-hint {
     font-size: .58rem;
+    flex-wrap: wrap;
+    row-gap: 2px;
+    line-height: 1.35;
   }
 
   .tabs-nav {
@@ -2229,9 +2241,27 @@ body::before {
   .nudge-btn {
     width: 100%;
   }
+
+  .onboarding-card,
+  .report-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .add-routine-bar {
+    flex-direction: column;
+  }
+
+  .primary-btn.compact {
+    width: 100%;
+  }
 }
 
 @media (max-width: 430px) {
+  html,
+  body {
+    min-width: 0;
+  }
+
   body {
     padding: 0;
     background: #11111c;
@@ -2249,25 +2279,28 @@ body::before {
 
   .simulator-panel,
   .care-panel {
-    padding: 20px 17px;
+    padding: 16px;
   }
 
   .simulator-panel {
-    min-height: 100vh;
+    min-height: auto;
+    gap: 12px;
   }
 
   .figure-studio {
-    min-height: 390px;
+    height: clamp(315px, 58svh, 390px);
+    min-height: 0;
     border-radius: 20px;
   }
 
   .orbit-device {
-    width: 315px;
-    max-width: 100%;
+    width: min(315px, calc(100vw - 48px), 54svh);
   }
 
   .studio-caption {
     top: 12px;
+    max-width: calc(100% - 18px);
+    font-size: .64rem;
   }
 
   .device-plate {
@@ -2276,12 +2309,12 @@ body::before {
   }
 
   .tray-grid {
-    grid-template-columns: repeat(7, 64px);
-    gap: 8px;
+    grid-template-columns: repeat(7, minmax(58px, 1fr));
+    gap: 7px;
   }
 
   .tray-dome {
-    width: 62px;
+    width: min(60px, 100%);
     border-radius: 17px;
   }
 
@@ -2295,6 +2328,37 @@ body::before {
 
   .brand-header h1 {
     font-size: 1.85rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .simulator-panel,
+  .care-panel {
+    padding: 14px;
+  }
+
+  .simulator-header h2 {
+    font-size: 1.35rem;
+  }
+
+  .status-badge {
+    flex-basis: 100%;
+  }
+
+  .figure-studio {
+    height: clamp(285px, 55svh, 350px);
+  }
+
+  .orbit-device {
+    width: min(285px, calc(100vw - 42px), 52svh);
+  }
+
+  .tray-grid {
+    grid-template-columns: repeat(7, 56px);
+  }
+
+  .tray-dome {
+    width: 54px;
   }
 }
 
