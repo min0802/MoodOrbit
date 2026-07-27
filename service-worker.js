@@ -2,8 +2,8 @@ const CACHE_NAME = 'mood-orbit-v6.0.3';
 const APP_SHELL = [
   './',
   './index.html',
-  './style.css?v=6.0.2',
-  './app.js?v=6.0.2',
+  './style.css?v=6.0.3',
+  './app.js?v=6.0.3',
   './manifest.json',
   './icons/icon.svg',
   './assets/device_main.png',
