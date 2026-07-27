@@ -2200,11 +2200,16 @@ body::before {
 
   .figure-studio {
     min-height: 0;
+    height: 390px;
+    height: clamp(340px, 62vh, 410px);
     height: clamp(340px, 62svh, 410px);
     padding-inline: 8px;
+    padding-bottom: 28px;
   }
 
   .orbit-device {
+    width: min(340px, 100%);
+    width: min(340px, 100%, 56vh);
     width: min(340px, 100%, 56svh);
   }
 
@@ -2288,12 +2293,16 @@ body::before {
   }
 
   .figure-studio {
+    height: 360px;
+    height: clamp(315px, 58vh, 390px);
     height: clamp(315px, 58svh, 390px);
     min-height: 0;
     border-radius: 20px;
   }
 
   .orbit-device {
+    width: min(315px, calc(100vw - 48px));
+    width: min(315px, calc(100vw - 48px), 54vh);
     width: min(315px, calc(100vw - 48px), 54svh);
   }
 
@@ -2309,12 +2318,13 @@ body::before {
   }
 
   .tray-grid {
-    grid-template-columns: repeat(7, minmax(58px, 1fr));
+    grid-template-columns: repeat(7, 58px);
     gap: 7px;
+    justify-content: start;
   }
 
   .tray-dome {
-    width: min(60px, 100%);
+    width: 58px;
     border-radius: 17px;
   }
 
@@ -2346,19 +2356,23 @@ body::before {
   }
 
   .figure-studio {
+    height: 330px;
+    height: clamp(285px, 55vh, 350px);
     height: clamp(285px, 55svh, 350px);
   }
 
   .orbit-device {
+    width: min(285px, calc(100vw - 42px));
+    width: min(285px, calc(100vw - 42px), 52vh);
     width: min(285px, calc(100vw - 42px), 52svh);
   }
 
   .tray-grid {
-    grid-template-columns: repeat(7, 56px);
+    grid-template-columns: repeat(7, 54px);
   }
 
   .tray-dome {
-    width: 54px;
+    width: 52px;
   }
 }
 

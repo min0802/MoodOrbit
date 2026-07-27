@@ -5,7 +5,7 @@
  * - Supabase REST insert with offline queue
  */
 
-const APP_VERSION = '6.0.0';
+const APP_VERSION = '6.0.2';
 const STORAGE_KEY = 'moodOrbit_DB_v6';
 const LEGACY_STORAGE_KEY = 'moodOrbit_DB';
 const PREVIOUS_STORAGE_KEY = 'moodOrbit_DB_v5';
